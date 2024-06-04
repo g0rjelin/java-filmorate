@@ -10,15 +10,33 @@ import java.util.Objects;
 
 @Slf4j
 public class FilmValidator {
-    public static final int MAX_FILM_DESCRIPTION_LENGTH = 200;
-    public static final LocalDate MIN_FILM_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+    private static final int MAX_FILM_DESCRIPTION_LENGTH = 200;
+    private static final LocalDate MIN_FILM_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 
-    public void validate(Film film) {
+    public static void validateNull(Film film) {
         if (Objects.isNull(film.getName()) || film.getName().isBlank()) {
             String validationViolation = "Название не может быть пустым";
             log.error(validationViolation);
             throw new ValidationException(validationViolation);
         }
+        if (Objects.isNull(film.getDescription()) || film.getDescription().isBlank()) {
+            String validationViolation = "Описание фильма не может быть пустым";
+            log.error(validationViolation);
+            throw new ValidationException(validationViolation);
+        }
+        if (Objects.isNull(film.getReleaseDate())) {
+            String validationViolation = "Дата релиза фильма не может быть пустой";
+            log.error(validationViolation);
+            throw new ValidationException(validationViolation);
+        }
+        if (Objects.isNull(film.getDuration())) {
+            String validationViolation = "Продолжительность фильма не может быть пустой";
+            log.error(validationViolation);
+            throw new ValidationException(validationViolation);
+        }
+    }
+
+    public static void validateFormat(Film film) {
         if (film.getDescription().length() > MAX_FILM_DESCRIPTION_LENGTH) {
             String validationViolation =
                     String.format("Превышена максимальная длина описания - %d символов", MAX_FILM_DESCRIPTION_LENGTH);

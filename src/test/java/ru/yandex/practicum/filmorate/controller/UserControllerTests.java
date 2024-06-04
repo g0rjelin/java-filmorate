@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.validation;
+package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,12 +8,12 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 
-public class UserValidatorTests {
-    UserValidator userValidator;
+public class UserControllerTests {
+    UserController userController;
 
     @BeforeEach
     void setUp() {
-        userValidator = new UserValidator();
+        userController = new UserController();
     }
 
     @Test
@@ -25,7 +25,7 @@ public class UserValidatorTests {
                 .login("myLogin")
                 .build();
 
-        Assertions.assertThrows(ValidationException.class, () -> userValidator.validate(nullEmailUser),
+        Assertions.assertThrows(ValidationException.class, () -> userController.create(nullEmailUser),
                 "Не вызывается исключение при передаче пустой электронной почты");
 
         final User noAtEmailUser = User.builder()
@@ -36,7 +36,7 @@ public class UserValidatorTests {
                 .login("myLogin")
                 .build();
 
-        Assertions.assertThrows(ValidationException.class, () -> userValidator.validate(noAtEmailUser),
+        Assertions.assertThrows(ValidationException.class, () -> userController.create(noAtEmailUser),
                 "Не вызывается исключение при передаче электронной почты без символа @");
     }
 
@@ -49,7 +49,7 @@ public class UserValidatorTests {
                 .email("some@email.com")
                 .build();
 
-        Assertions.assertThrows(ValidationException.class, () -> userValidator.validate(nullLoginUser),
+        Assertions.assertThrows(ValidationException.class, () -> userController.create(nullLoginUser),
                 "Не вызывается исключение при передаче пустого логина");
 
         final User loginWithSpaceUser = User.builder()
@@ -60,8 +60,21 @@ public class UserValidatorTests {
                 .email("some@email.com")
                 .build();
 
-        Assertions.assertThrows(ValidationException.class, () -> userValidator.validate(loginWithSpaceUser),
+        Assertions.assertThrows(ValidationException.class, () -> userController.create(loginWithSpaceUser),
                 "Не вызывается исключение при передаче логина, содержащего пробел");
+    }
+
+    @Test
+    public void validateNullBirthday() {
+        final User user = User.builder()
+                .id(1)
+                .name("My Name")
+                .email("some@email.com")
+                .login("myLogin")
+                .build();
+
+        Assertions.assertThrows(ValidationException.class, () -> userController.create(user),
+                "Не вызывается исключение при передаче пустой даты рождения");
     }
 
     @Test
@@ -74,7 +87,7 @@ public class UserValidatorTests {
                 .login("myLogin")
                 .build();
 
-        Assertions.assertThrows(ValidationException.class, () -> userValidator.validate(user),
+        Assertions.assertThrows(ValidationException.class, () -> userController.create(user),
                 "Не вызывается исключение при передаче дня рождения в будущем");
     }
 
@@ -87,7 +100,7 @@ public class UserValidatorTests {
                 .login("myLogin")
                 .build();
 
-        Assertions.assertDoesNotThrow(() -> userValidator.validate(user),
+        Assertions.assertDoesNotThrow(() -> userController.create(user),
                 "Вызывается исключение при передаче пустого имени");
     }
 }

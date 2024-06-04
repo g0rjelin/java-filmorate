@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +22,6 @@ import java.util.Objects;
 public class UserController {
 
     private final Map<Long, User> users = new HashMap<>();
-    private final UserValidator userValidator = new UserValidator();
 
     @GetMapping
     public Collection<User> findAll() {
@@ -32,8 +30,9 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@Valid @RequestBody User newUser) {
-        userValidator.validate(newUser);
+    public User create(@RequestBody User newUser) {
+        UserValidator.validateNull(newUser);
+        UserValidator.validateFormat(newUser);
         newUser.setId(getNextId());
         if (Objects.isNull(newUser.getName()) || newUser.getName().isBlank()) {
             log.debug(
@@ -47,25 +46,21 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User updUser) {
+    public User update(@RequestBody User updUser) {
         if (!users.containsKey(updUser.getId())) {
             String idNotFound = String.format("Пользователь с id = %d не найден", updUser.getId());
             log.error(idNotFound);
             throw new NotFoundException(idNotFound);
         }
-        userValidator.validate(updUser);
+        UserValidator.validateFormat(updUser);
         User oldUser = users.get(updUser.getId());
-        oldUser.setLogin(updUser.getLogin());
-        oldUser.setEmail(updUser.getEmail());
-        oldUser.setBirthday(updUser.getBirthday());
-        if (Objects.isNull(updUser.getName()) || updUser.getName().isBlank()) {
-            log.debug(
-                    "При обновлении пользователя получено пусто имя Name пользователя с id = {}, в качестве имени будет использован логин {}",
-                    updUser.getId(), updUser.getLogin());
-            oldUser.setName(updUser.getLogin());
-        } else {
-            oldUser.setName(updUser.getName());
-        }
+        oldUser.setLogin(Objects.isNull(updUser.getLogin()) || updUser.getLogin().isBlank() ? oldUser.getLogin() :
+                updUser.getLogin());
+        oldUser.setEmail(Objects.isNull(updUser.getEmail()) || updUser.getEmail().isBlank() ? oldUser.getEmail() :
+                updUser.getEmail());
+        oldUser.setBirthday(Objects.isNull(updUser.getBirthday()) ? oldUser.getBirthday() : updUser.getBirthday());
+        oldUser.setName(Objects.isNull(updUser.getName()) || updUser.getName().isBlank() ? oldUser.getName() :
+                updUser.getName());
         log.info("Пользователь {} обновлен", updUser);
         return oldUser;
     }
