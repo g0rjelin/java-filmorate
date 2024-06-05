@@ -25,8 +25,11 @@ public class UserControllerTests {
                 .login("myLogin")
                 .build();
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.create(nullEmailUser),
-                "Не вызывается исключение при передаче пустой электронной почты");
+        Exception validationException =
+                Assertions.assertThrows(ValidationException.class, () -> userController.create(nullEmailUser),
+                        "Не вызывается исключение при передаче пустой электронной почты");
+        Assertions.assertEquals("Электронная почта не может быть пустой", validationException.getMessage(),
+                "Неверное сообщение при валидации пустой электронной почты");
 
         final User noAtEmailUser = User.builder()
                 .id(1)
@@ -36,8 +39,11 @@ public class UserControllerTests {
                 .login("myLogin")
                 .build();
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.create(noAtEmailUser),
-                "Не вызывается исключение при передаче электронной почты без символа @");
+        validationException =
+                Assertions.assertThrows(ValidationException.class, () -> userController.create(noAtEmailUser),
+                        "Не вызывается исключение при передаче электронной почты без символа @");
+        Assertions.assertEquals("Электронная почта не должна содержать символ @", validationException.getMessage(),
+                "Неверное сообщение при проверке электронной почты на наличие @");
     }
 
     @Test
@@ -49,8 +55,11 @@ public class UserControllerTests {
                 .email("some@email.com")
                 .build();
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.create(nullLoginUser),
-                "Не вызывается исключение при передаче пустого логина");
+        Exception validationException =
+                Assertions.assertThrows(ValidationException.class, () -> userController.create(nullLoginUser),
+                        "Не вызывается исключение при передаче пустого логина");
+        Assertions.assertEquals("Логин не может быть пустым", validationException.getMessage(),
+                "Неверное сообщение при валидации пустого логина");
 
         final User loginWithSpaceUser = User.builder()
                 .id(1)
@@ -60,8 +69,11 @@ public class UserControllerTests {
                 .email("some@email.com")
                 .build();
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.create(loginWithSpaceUser),
-                "Не вызывается исключение при передаче логина, содержащего пробел");
+        validationException =
+                Assertions.assertThrows(ValidationException.class, () -> userController.create(loginWithSpaceUser),
+                        "Не вызывается исключение при передаче логина, содержащего пробел");
+        Assertions.assertEquals("Логин не может содержать пробелы", validationException.getMessage(),
+                "Неверное сообщение при проверке логина на наличие пробелов");
     }
 
     @Test
@@ -73,8 +85,11 @@ public class UserControllerTests {
                 .login("myLogin")
                 .build();
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.create(user),
-                "Не вызывается исключение при передаче пустой даты рождения");
+        Exception validationException =
+                Assertions.assertThrows(ValidationException.class, () -> userController.create(user),
+                        "Не вызывается исключение при передаче пустой даты рождения");
+        Assertions.assertEquals("Дата рождения не должна быть пустой", validationException.getMessage(),
+                "Неверное сообщение при валидации пустой даты рождения");
     }
 
     @Test
@@ -87,8 +102,11 @@ public class UserControllerTests {
                 .login("myLogin")
                 .build();
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.create(user),
-                "Не вызывается исключение при передаче дня рождения в будущем");
+        Exception validationException =
+                Assertions.assertThrows(ValidationException.class, () -> userController.create(user),
+                        "Не вызывается исключение при передаче дня рождения в будущем");
+        Assertions.assertEquals("Дата рождения не может быть в будущем", validationException.getMessage(),
+                "Неверное сообщение при проверке даты рождения");
     }
 
     @Test
