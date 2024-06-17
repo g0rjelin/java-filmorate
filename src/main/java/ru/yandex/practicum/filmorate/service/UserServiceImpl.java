@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,29 +24,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findUserById(Long id) {
-        Optional<User> optUser = userStorage.findUserById(id);
-        if (optUser.isEmpty()) {
-            String idNotFound = String.format("Пользователь с id = %d не найден", id);
-            log.warn(idNotFound);
-            throw new NotFoundException(idNotFound);
-        }
-        return optUser.get();
+        return userStorage.findUserById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", id)));
     }
 
     @Override
     public void addFriend(Long userId, Long friendId) {
-        Optional<User> optUser = userStorage.findUserById(userId);
-        Optional<User> optFriend = userStorage.findUserById(friendId);
-        if (optUser.isEmpty()) {
-            String idNotFound = String.format("Пользователь с id = %d не найден", userId);
-            log.warn(idNotFound);
-            throw new NotFoundException(idNotFound);
-        }
-        if (optFriend.isEmpty()) {
-            String idNotFound = String.format("Пользователь для добавления в друзья с id = %d не найден", friendId);
-            log.warn(idNotFound);
-            throw new NotFoundException(idNotFound);
-        }
+        User user = userStorage.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
+        User friend = userStorage.findUserById(friendId).orElseThrow(() -> new NotFoundException(
+                String.format("Пользователь для добавления в друзья с id = %d не найден", friendId)));
         if (userId.equals(friendId)) {
             String equalIds = String.format(
                     "Пользователь не может добавить себя в друзья. Для id пользователя и id друга передано одинаковое значение %d",
@@ -55,26 +41,18 @@ public class UserServiceImpl implements UserService {
             log.warn(equalIds);
             throw new ValidationException(equalIds);
         }
-        optUser.get().getFriends().add(friendId);
-        optFriend.get().getFriends().add(userId);
+        user.getFriends().add(friendId);
+        friend.getFriends().add(userId);
         log.info("Пользователь c friendId = {} добавлен в список друзей пользователя с id = {}", friendId, userId);
         log.info("Пользователь c friendId = {} добавлен в список друзей пользователя с id = {}", userId, friendId);
     }
 
     @Override
     public void deleteFriend(Long userId, Long friendId) {
-        Optional<User> optUser = userStorage.findUserById(userId);
-        Optional<User> optFriend = userStorage.findUserById(friendId);
-        if (optUser.isEmpty()) {
-            String idNotFound = String.format("Пользователь с id = %d не найден", userId);
-            log.warn(idNotFound);
-            throw new NotFoundException(idNotFound);
-        }
-        if (optFriend.isEmpty()) {
-            String idNotFound = String.format("Пользователь для удаление из друзей с id = %d не найден", friendId);
-            log.warn(idNotFound);
-            throw new NotFoundException(idNotFound);
-        }
+        User user = userStorage.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
+        User friend = userStorage.findUserById(friendId).orElseThrow(() -> new NotFoundException(
+                String.format("Пользователь для удаление из друзей с id = %d не найден", friendId)));
         if (userId.equals(friendId)) {
             String equalIds = String.format(
                     "Пользователь не может добавить себя в друзья. Для id пользователя и id друга передано одинаковое значение %d",
@@ -82,21 +60,17 @@ public class UserServiceImpl implements UserService {
             log.warn(equalIds);
             throw new ValidationException(equalIds);
         }
-        optUser.get().getFriends().remove(friendId);
-        optFriend.get().getFriends().remove(userId);
+        user.getFriends().remove(friendId);
+        friend.getFriends().remove(userId);
         log.info("Пользователь c friendId = {} удален из списка друзей пользователя с id = {}", friendId, userId);
         log.info("Пользователь c friendId = {} удален из списка друзей пользователя с id = {}", userId, friendId);
     }
 
     @Override
     public Collection<User> getUserFriends(Long userId) {
-        Optional<User> optUser = userStorage.findUserById(userId);
-        if (optUser.isEmpty()) {
-            String idNotFound = String.format("Пользователь с id = %d не найден", userId);
-            log.warn(idNotFound);
-            throw new NotFoundException(idNotFound);
-        }
-        Collection<User> userFriends = optUser.get().getFriends().stream()
+        User user = userStorage.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
+        Collection<User> userFriends = user.getFriends().stream()
                 .map(id -> userStorage.findUserById(id).get())
                 .collect(Collectors.toList());
         log.debug("Список друзей пользователя {} для вывода: {}", userId, userFriends);
@@ -105,21 +79,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Collection<User> getCommonFriends(Long userId, Long otherId) {
-        Optional<User> optUser = userStorage.findUserById(userId);
-        Optional<User> optOther = userStorage.findUserById(otherId);
-        if (optUser.isEmpty()) {
-            String idNotFound = String.format("Пользователь с id = %d не найден", userId);
-            log.warn(idNotFound);
-            throw new NotFoundException(idNotFound);
-        }
-        if (optOther.isEmpty()) {
-            String idNotFound = String.format("Пользователь с id = %d не найден", otherId);
-            log.warn(idNotFound);
-            throw new NotFoundException(idNotFound);
-        }
-        Collection<User> commonFriends = optUser.get().getFriends().stream()
-                .filter(user -> optOther.get().getFriends().stream()
-                        .anyMatch(user::equals))
+        User user = userStorage.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
+        User other = userStorage.findUserById(otherId)
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", otherId)));
+        Collection<User> commonFriends = user.getFriends().stream()
+                .filter(u -> other.getFriends().stream()
+                        .anyMatch(u::equals))
                 .map(id -> userStorage.findUserById(id).get())
                 .collect(Collectors.toList());
         log.debug("Список общих друзей пользователей {} и {} для вывода: {}", userId, otherId, commonFriends);

@@ -57,7 +57,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Optional<Film> findFilmById(Integer id) {
-        return films.containsKey(id) ? Optional.of(films.get(id)) : Optional.empty();
+        return Optional.ofNullable(films.get(id));
     }
 
     private int getNextId() {

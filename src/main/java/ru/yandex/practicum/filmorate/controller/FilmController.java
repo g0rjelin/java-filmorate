@@ -21,7 +21,6 @@ import java.util.Collection;
 @RequestMapping("/films")
 @RequiredArgsConstructor
 public class FilmController {
-
     private final FilmService filmService;
 
     @GetMapping
@@ -56,7 +55,7 @@ public class FilmController {
 
     @GetMapping("/popular")
     public Collection<Film> topPopularFilms(
-            @RequestParam(defaultValue = FilmService.TOP_POPULAR_FILMS_NUMBER) int count) {
+            @RequestParam(defaultValue = "10") int count) {
         return filmService.getTopPopularFilms(count);
     }
 }

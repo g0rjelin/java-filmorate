@@ -5,7 +5,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.Collection;
 
 public interface FilmService {
-    String TOP_POPULAR_FILMS_NUMBER = "10";
 
     Collection<Film> findAll();
 

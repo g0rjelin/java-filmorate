@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,13 +26,8 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film findFilmById(Integer id) {
-        Optional<Film> optFilm = filmStorage.findFilmById(id);
-        if (optFilm.isEmpty()) {
-            String idNotFound = String.format("Фильм с id = %d не найден", id);
-            log.warn(idNotFound);
-            throw new NotFoundException(idNotFound);
-        }
-        return optFilm.get();
+        return filmStorage.findFilmById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Фильм с id = %d не найден", id)));
     }
 
     @Override
@@ -48,37 +42,21 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public void addLike(Integer filmId, Long userId) {
-        Optional<Film> optFilm = filmStorage.findFilmById(filmId);
-        Optional<User> optUser = userStorage.findUserById(userId);
-        if (optUser.isEmpty()) {
-            String idNotFound = String.format("Пользователь с id = %d не найден", userId);
-            log.warn(idNotFound);
-            throw new NotFoundException(idNotFound);
-        }
-        if (optFilm.isEmpty()) {
-            String idNotFound = String.format("Фильм с id = %d не найден", filmId);
-            log.warn(idNotFound);
-            throw new NotFoundException(idNotFound);
-        }
-        optFilm.get().getUserLikes().add(userId);
+        Film film = filmStorage.findFilmById(filmId)
+                .orElseThrow(() -> new NotFoundException(String.format("Фильм с id = %d не найден", filmId)));
+        User user = userStorage.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
+        film.getUserLikes().add(userId);
         log.info("Добавлен лайк пользователя c id = {} к фильму с filmId = {}", userId, filmId);
     }
 
     @Override
     public void deleteLike(Integer filmId, Long userId) {
-        Optional<Film> optFilm = filmStorage.findFilmById(filmId);
-        Optional<User> optUser = userStorage.findUserById(userId);
-        if (optUser.isEmpty()) {
-            String idNotFound = String.format("Пользователь с id = %d не найден", userId);
-            log.warn(idNotFound);
-            throw new NotFoundException(idNotFound);
-        }
-        if (optFilm.isEmpty()) {
-            String idNotFound = String.format("Фильм с id = %d не найден", filmId);
-            log.warn(idNotFound);
-            throw new NotFoundException(idNotFound);
-        }
-        optFilm.get().getUserLikes().remove(userId);
+        Film film = filmStorage.findFilmById(filmId)
+                .orElseThrow(() -> new NotFoundException(String.format("Фильм с id = %d не найден", filmId)));
+        User user = userStorage.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
+        film.getUserLikes().remove(userId);
         log.info("Удален лайк пользователя c id = {} к фильму с filmId = {}", userId, filmId);
     }
 
