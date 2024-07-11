@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -18,14 +20,16 @@ public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
 
     @Override
-    public Collection<User> findAll() {
-        return userStorage.findAll();
+    public Collection<UserDto> findAll() {
+        return userStorage.findAll().stream()
+                .map(UserMapper::modelToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public User findUserById(Long id) {
-        return userStorage.findUserById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", id)));
+    public UserDto findUserById(Long id) {
+        return UserMapper.modelToDto(userStorage.findUserById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", id))));
     }
 
     @Override
@@ -41,10 +45,8 @@ public class UserServiceImpl implements UserService {
             log.warn(equalIds);
             throw new ValidationException(equalIds);
         }
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+        userStorage.addFriend(userId, friendId);
         log.info("Пользователь c friendId = {} добавлен в список друзей пользователя с id = {}", friendId, userId);
-        log.info("Пользователь c friendId = {} добавлен в список друзей пользователя с id = {}", userId, friendId);
     }
 
     @Override
@@ -60,45 +62,44 @@ public class UserServiceImpl implements UserService {
             log.warn(equalIds);
             throw new ValidationException(equalIds);
         }
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
-        log.info("Пользователь c friendId = {} удален из списка друзей пользователя с id = {}", friendId, userId);
-        log.info("Пользователь c friendId = {} удален из списка друзей пользователя с id = {}", userId, friendId);
+        if (userStorage.deleteFriend(user.getId(), friend.getId())) {
+            log.info("Пользователь c friendId = {} удален из списка друзей пользователя с id = {}", friendId, userId);
+        }
     }
 
     @Override
-    public Collection<User> getUserFriends(Long userId) {
+    public Collection<UserDto> getUserFriends(Long userId) {
         User user = userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
-        Collection<User> userFriends = user.getFriends().stream()
-                .map(id -> userStorage.findUserById(id).get())
+        Collection<UserDto> userFriends = user.getFriends().stream()
+                .map(id -> UserMapper.modelToDto(userStorage.findUserById(id).get()))
                 .collect(Collectors.toList());
         log.debug("Список друзей пользователя {} для вывода: {}", userId, userFriends);
         return userFriends;
     }
 
     @Override
-    public Collection<User> getCommonFriends(Long userId, Long otherId) {
+    public Collection<UserDto> getCommonFriends(Long userId, Long otherId) {
         User user = userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
         User other = userStorage.findUserById(otherId)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", otherId)));
-        Collection<User> commonFriends = user.getFriends().stream()
+        Collection<UserDto> commonFriends = user.getFriends().stream()
                 .filter(u -> other.getFriends().stream()
                         .anyMatch(u::equals))
-                .map(id -> userStorage.findUserById(id).get())
+                .map(id -> UserMapper.modelToDto(userStorage.findUserById(id).get()))
                 .collect(Collectors.toList());
         log.debug("Список общих друзей пользователей {} и {} для вывода: {}", userId, otherId, commonFriends);
         return commonFriends;
     }
 
     @Override
-    public User create(User newUser) {
-        return userStorage.create(newUser);
+    public UserDto create(User newUser) {
+        return UserMapper.modelToDto(userStorage.create(newUser));
     }
 
     @Override
-    public User update(User updUser) {
-        return userStorage.update(updUser);
+    public UserDto update(User updUser) {
+        return UserMapper.modelToDto(userStorage.update(updUser));
     }
 }

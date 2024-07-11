@@ -29,17 +29,17 @@ public class UserValidator {
     }
 
     public static void validateFormat(User user) {
-        if (!user.getEmail().contains("@")) {
+        if (!Objects.isNull(user.getEmail()) && !user.getEmail().contains("@")) {
             String validationViolation = "Электронная почта не должна содержать символ @";
             log.error(validationViolation);
             throw new ValidationException(validationViolation);
         }
-        if (user.getLogin().contains(" ")) {
+        if (!Objects.isNull(user.getLogin()) && user.getLogin().contains(" ")) {
             String validationViolation = "Логин не может содержать пробелы";
             log.error(validationViolation);
             throw new ValidationException(validationViolation);
         }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
+        if (!Objects.isNull(user.getBirthday()) && user.getBirthday().isAfter(LocalDate.now())) {
             String validationViolation = "Дата рождения не может быть в будущем";
             log.error(validationViolation);
             throw new ValidationException(validationViolation);

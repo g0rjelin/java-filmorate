@@ -5,8 +5,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.service.FilmServiceImpl;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryGenreStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryRatingStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
@@ -20,7 +23,9 @@ public class FilmControllerTests {
     @BeforeEach
     void setUp() {
         filmController = new FilmController(new FilmServiceImpl(new InMemoryFilmStorage(new HashMap<>()),
-                new InMemoryUserStorage(new HashMap<>())));
+                new InMemoryUserStorage(new HashMap<>()),
+                new InMemoryRatingStorage(),
+                new InMemoryGenreStorage()));
     }
 
     @Test
@@ -29,6 +34,7 @@ public class FilmControllerTests {
                 .id(1)
                 .description("null name film description")
                 .duration(10)
+                .mpa(Rating.builder().id(1).name("G").build())
                 .releaseDate(LocalDate.now())
                 .build();
 
@@ -43,6 +49,7 @@ public class FilmControllerTests {
                 .name("   ")
                 .description("blank name film description")
                 .duration(10)
+                .mpa(Rating.builder().id(1).build())
                 .releaseDate(LocalDate.now())
                 .build();
 
@@ -59,6 +66,7 @@ public class FilmControllerTests {
                 .id(1)
                 .name("null description film")
                 .duration(10)
+                .mpa(Rating.builder().id(1).build())
                 .releaseDate(LocalDate.now())
                 .build();
 
@@ -73,6 +81,7 @@ public class FilmControllerTests {
                 .name("blank film description")
                 .description("   ")
                 .duration(10)
+                .mpa(Rating.builder().id(1).build())
                 .releaseDate(LocalDate.now())
                 .build();
 
@@ -91,6 +100,7 @@ public class FilmControllerTests {
                 .name("TestDescriptionName")
                 .description("a".repeat(maxFilmDescriptionLength + 1))
                 .duration(10)
+                .mpa(Rating.builder().id(1).build())
                 .releaseDate(LocalDate.now())
                 .build();
 
@@ -110,6 +120,7 @@ public class FilmControllerTests {
                 .name("null release date film")
                 .description("Test Null Release Date Description")
                 .duration(10)
+                .mpa(Rating.builder().id(1).build())
                 .build();
 
         Exception validationException =
@@ -127,6 +138,7 @@ public class FilmControllerTests {
                 .name("TestReleaseDateName")
                 .description("Test Release Date Description")
                 .duration(10)
+                .mpa(Rating.builder().id(1).build())
                 .releaseDate(minFilmReleaseDate.minusDays(1))
                 .build();
 
@@ -145,6 +157,7 @@ public class FilmControllerTests {
                 .id(1)
                 .name("TestNullDurationName")
                 .description("Test Null Duration Description")
+                .mpa(Rating.builder().id(1).build())
                 .releaseDate(LocalDate.now())
                 .build();
         Exception validationException =
@@ -161,6 +174,7 @@ public class FilmControllerTests {
                 .name("TestDurationName")
                 .description("Test Duration Description")
                 .duration(0)
+                .mpa(Rating.builder().id(1).build())
                 .releaseDate(LocalDate.now())
                 .build();
 
