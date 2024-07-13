@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 @Builder
 @RequiredArgsConstructor
 public class Rating {
+
     private final int id;
     private final String name;
 }

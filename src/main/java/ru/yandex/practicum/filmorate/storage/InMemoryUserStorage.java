@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -86,4 +87,15 @@ public class InMemoryUserStorage implements UserStorage {
     public boolean deleteFriend(Long userId, Long friendId) {
         return !Objects.isNull(users.get(userId).getFriends().remove(friendId));
     }
+
+    @Override
+    public Collection<User> getCommonFriends(Long userId, Long otherId) {
+        return null;
+    }
+
+    @Override
+    public Set<User> getFriendsByUserId(Long userId) {
+        return null;
+    }
+
 }

@@ -9,8 +9,11 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.validation.UserValidator;
 
 import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +41,13 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
         User friend = userStorage.findUserById(friendId).orElseThrow(() -> new NotFoundException(
                 String.format("Пользователь для добавления в друзья с id = %d не найден", friendId)));
+        if (userStorage.getFriendsByUserId(userId).contains(friendId)) {
+            String friendshipExists =
+                    String.format("Пользователь с id = %d уже является другом пользователя c id = %d", userId,
+                            friendId);
+            log.warn(friendshipExists);
+            throw new ValidationException(friendshipExists);
+        }
         if (userId.equals(friendId)) {
             String equalIds = String.format(
                     "Пользователь не может добавить себя в друзья. Для id пользователя и id друга передано одинаковое значение %d",
@@ -71,9 +81,9 @@ public class UserServiceImpl implements UserService {
     public Collection<UserDto> getUserFriends(Long userId) {
         User user = userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
-        Collection<UserDto> userFriends = user.getFriends().stream()
-                .map(id -> UserMapper.modelToDto(userStorage.findUserById(id).get()))
-                .collect(Collectors.toList());
+        Collection<UserDto> userFriends =
+                userStorage.getFriendsByUserId(userId).stream().map(UserMapper::modelToDto).collect(
+                        Collectors.toSet());
         log.debug("Список друзей пользователя {} для вывода: {}", userId, userFriends);
         return userFriends;
     }
@@ -84,10 +94,8 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", userId)));
         User other = userStorage.findUserById(otherId)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %d не найден", otherId)));
-        Collection<UserDto> commonFriends = user.getFriends().stream()
-                .filter(u -> other.getFriends().stream()
-                        .anyMatch(u::equals))
-                .map(id -> UserMapper.modelToDto(userStorage.findUserById(id).get()))
+        Collection<UserDto> commonFriends = userStorage.getCommonFriends(userId, otherId).stream()
+                .map(UserMapper::modelToDto)
                 .collect(Collectors.toList());
         log.debug("Список общих друзей пользователей {} и {} для вывода: {}", userId, otherId, commonFriends);
         return commonFriends;
@@ -100,6 +108,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto update(User updUser) {
+        UserValidator.validateFormat(updUser);
+        Optional<User> optUser = userStorage.findUserById(updUser.getId());
+        if (optUser.isEmpty()) {
+            String idNotFound = String.format("Пользователь с id = %d не найден", updUser.getId());
+            log.warn(idNotFound);
+            throw new NotFoundException(idNotFound);
+        }
+        User oldUser = optUser.get();
+        oldUser.setLogin(Objects.isNull(updUser.getLogin()) || updUser.getLogin().isBlank() ? oldUser.getLogin() :
+                updUser.getLogin());
+        oldUser.setEmail(Objects.isNull(updUser.getEmail()) || updUser.getEmail().isBlank() ? oldUser.getEmail() :
+                updUser.getEmail());
+        oldUser.setBirthday(Objects.isNull(updUser.getBirthday()) ? oldUser.getBirthday() : updUser.getBirthday());
+        oldUser.setName(Objects.isNull(updUser.getName()) || updUser.getName().isBlank() ? oldUser.getName() :
+                updUser.getName());
         return UserMapper.modelToDto(userStorage.update(updUser));
     }
 }

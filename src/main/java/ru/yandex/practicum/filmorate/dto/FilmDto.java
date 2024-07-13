@@ -10,14 +10,12 @@ import java.util.Set;
 @Data
 @Builder
 public class FilmDto {
+
     private int id;
-
     private String name;
-
     private String description;
     private LocalDate releaseDate;
     private Integer duration; //минуты
-
     private Set<Long> userLikes;
     private Rating mpa;
     private Set<GenreDto> genres;

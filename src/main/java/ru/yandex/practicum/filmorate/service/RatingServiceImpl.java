@@ -25,7 +25,6 @@ public class RatingServiceImpl implements RatingService {
     @Override
     public RatingDto findRatingById(Integer id) {
         return RatingMapper.modelToDto(ratingStorage.findRatingById(id)
-                .orElseThrow(
-                        () -> new NotFoundException(String.format("Рейтинг фильма с id = %d не найден", id))));
+                .orElseThrow(() -> new NotFoundException(String.format("Рейтинг фильма с id = %d не найден", id))));
     }
 }

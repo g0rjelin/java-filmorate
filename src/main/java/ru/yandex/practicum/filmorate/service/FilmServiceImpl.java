@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.RatingStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.validation.FilmValidator;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -42,25 +43,39 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public FilmDto create(Film newFilm) {
+        FilmValidator.validateNull(newFilm);
+        FilmValidator.validateFormat(newFilm);
         Integer ratingId = newFilm.getMpa().getId();
-        ratingStorage.findRatingById(ratingId)
-                .orElseThrow(
-                        () -> new ValidationException(String.format("Рейтинг фильма с id = %d не найден", ratingId)));
+        ratingStorage.findRatingById(ratingId).orElseThrow(
+                () -> new ValidationException(String.format("Рейтинг фильма с id = %d не найден", ratingId)));
         Collection<Genre> genres = newFilm.getGenres();
         if (!Objects.isNull(genres)) {
+            Collection<Integer> genresIdsDict =
+                    genreStorage.findAll().stream().map(Genre::getId).collect(Collectors.toSet());
             for (Genre genre : genres) {
-                genreStorage.findGenreById(genre.getId())
-                        .orElseThrow(
-                                () -> new ValidationException(
-                                        String.format("Жанр фильма с id = %d не найден", genre.getId()
-                                        )));
+                if (!genresIdsDict.contains(genre.getId())) {
+                    throw new ValidationException(String.format("Жанр фильма с id = %d не найден", genre.getId()));
+                }
             }
         }
-        return FilmMapper.modelToDto(filmStorage.create(newFilm));
+        Film film = filmStorage.create(newFilm);
+        return FilmMapper.modelToDto(film);
     }
 
     @Override
     public FilmDto update(Film updFilm) {
+        FilmValidator.validateFormat(updFilm);
+        Film oldFilm = filmStorage.findFilmById(updFilm.getId())
+                .orElseThrow(() -> new NotFoundException(String.format("Фильм с id = %d не найден", updFilm.getId())));
+        oldFilm.setDescription(Objects.isNull(updFilm.getDescription()) || updFilm.getDescription().isBlank() ?
+                oldFilm.getDescription() : updFilm.getDescription());
+        oldFilm.setName(Objects.isNull(updFilm.getName()) || updFilm.getName().isBlank() ?
+                oldFilm.getName() : updFilm.getName());
+        oldFilm.setReleaseDate(
+                Objects.isNull(updFilm.getReleaseDate()) ? oldFilm.getReleaseDate() : updFilm.getReleaseDate());
+        oldFilm.setDuration(Objects.isNull(updFilm.getDuration()) ? oldFilm.getDuration() : updFilm.getDuration());
+        oldFilm.setMpa(Objects.isNull(updFilm.getMpa()) ? oldFilm.getMpa() : updFilm.getMpa());
+        oldFilm.setGenres(Objects.isNull(updFilm.getGenres()) ? oldFilm.getGenres() : updFilm.getGenres());
         return FilmMapper.modelToDto(filmStorage.update(updFilm));
     }
 

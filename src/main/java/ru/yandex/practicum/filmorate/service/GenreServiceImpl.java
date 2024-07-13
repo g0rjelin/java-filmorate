@@ -25,9 +25,6 @@ public class GenreServiceImpl implements GenreService {
     @Override
     public GenreDto findGenreById(Integer id) {
         return GenreMapper.modelToDto(genreStorage.findGenreById(id)
-                .orElseThrow(
-                        () -> new NotFoundException(
-                                String.format("Жанр фильма с id = %d не найден", id
-                                ))));
+                .orElseThrow(() -> new NotFoundException(String.format("Жанр фильма с id = %d не найден", id))));
     }
 }
