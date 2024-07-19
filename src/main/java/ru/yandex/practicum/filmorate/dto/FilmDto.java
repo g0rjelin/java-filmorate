@@ -1,17 +1,15 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.time.LocalDate;
 import java.util.Set;
 
-/**
- * Film.
- */
 @Data
 @Builder
-public class Film {
+public class FilmDto {
 
     private int id;
     private String name;
@@ -20,5 +18,5 @@ public class Film {
     private Integer duration; //минуты
     private Set<Long> userLikes;
     private Rating mpa;
-    private Set<Genre> genres;
+    private Set<GenreDto> genres;
 }

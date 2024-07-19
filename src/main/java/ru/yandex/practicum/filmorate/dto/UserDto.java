@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto;
 
 import lombok.Builder;
 import lombok.Data;
@@ -6,12 +6,9 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.Set;
 
-/**
- * User.
- */
 @Data
 @Builder
-public class User {
+public class UserDto {
 
     private long id;
     private String email;
