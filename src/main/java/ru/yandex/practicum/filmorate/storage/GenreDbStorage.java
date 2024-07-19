@@ -31,6 +31,9 @@ public class GenreDbStorage implements GenreStorage {
     public Optional<Genre> findGenreById(Integer id) {
         String query = "SELECT * FROM genre WHERE id = ?";
         List<Genre> result = jdbc.query(query, genreMapper, id);
+        if (result.size() == 0) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(result.getFirst());
     }
 
