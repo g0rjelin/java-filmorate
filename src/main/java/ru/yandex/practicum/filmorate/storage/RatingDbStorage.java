@@ -31,10 +31,7 @@ public class RatingDbStorage implements RatingStorage {
     public Optional<Rating> findRatingById(Integer id) {
         String query = "SELECT * FROM rating WHERE id = ?";
         List<Rating> result = jdbc.query(query, ratingMapper, id);
-        if (result.size() == 0) {
-            return Optional.empty();
-        }
-        return Optional.of(result.getFirst());
+        return Optional.ofNullable(result.getFirst());
     }
 
 }
