@@ -109,4 +109,23 @@ public class FilmServiceImpl implements FilmService {
         log.debug("Список {} наиболее популярных фильмов для вывода: {}", count, topPopularFilms);
         return topPopularFilms;
     }
+
+    @Override
+    public Collection<FilmDto> getCommonFilms(Long userId, Long friendId) {
+        User user = userStorage.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с userId = %d не найден", userId)));
+        User friend = userStorage.findUserById(friendId)
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с friendId = %d не найден", friendId)));
+        if (userId.equals(friendId)) {
+            throw new ValidationException(String.format("Введен один и тот же id пользователя = %d", userId));
+        }
+        Collection<FilmDto> commonFilms = filmStorage.findCommonFilms(userId, friendId).stream()
+                .map(FilmMapper::modelToDto)
+                .sorted((f1, f2) -> Long.compare(f2.getUserLikes().size(), f1.getUserLikes().size()))
+                .collect(Collectors.toList());
+        log.debug(
+                "Список общих отсортированных по популярности фильмов у пользователей с id = {} и id = {} для вывода: {}",
+                userId, friendId, commonFilms);
+        return commonFilms;
+    }
 }

@@ -70,6 +70,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         films.get(filmId).getUserLikes().remove(userId);
     }
 
+    @Override
+    public Collection<Film> findCommonFilms(Long userId, Long friendId) {
+        return null;
+    }
+
     private int getNextId() {
         int currentMaxId = films.keySet()
                 .stream()
